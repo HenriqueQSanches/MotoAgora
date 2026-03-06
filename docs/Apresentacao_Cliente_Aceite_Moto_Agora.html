@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apresentação para Aceite — Sistema Moto Agora</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 40px 32px;
+      color: #1a1a1a;
+      line-height: 1.55;
+      background: #fff;
+    }
+    .header {
+      text-align: center;
+      padding-bottom: 28px;
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 32px;
+    }
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin: 0 0 4px 0;
+      color: #111;
+    }
+    .header .sub {
+      font-size: 0.95rem;
+      color: #555;
+    }
+    .responsavel {
+      background: #f8f9fa;
+      border-left: 4px solid #333;
+      padding: 14px 18px;
+      margin: 24px 0;
+      font-size: 0.95rem;
+    }
+    .responsavel strong { color: #222; }
+    h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #222;
+      margin-top: 28px;
+      margin-bottom: 10px;
+    }
+    p { margin: 8px 0; color: #333; }
+    ul { margin: 8px 0; padding-left: 22px; }
+    li { margin: 4px 0; }
+    .prazo-box {
+      background: #f0f4f8;
+      border: 1px solid #c5d0de;
+      border-radius: 6px;
+      padding: 20px 24px;
+      margin: 20px 0;
+    }
+    .prazo-box .destaque { font-size: 1.15rem; font-weight: 600; color: #1a1a1a; }
+    .prazo-box .detalhe { font-size: 0.9rem; color: #555; margin-top: 8px; }
+    .aceite {
+      margin-top: 40px;
+      padding-top: 24px;
+      border-top: 1px solid #ddd;
+    }
+    .aceite table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+    .aceite td { padding: 10px 0; border-bottom: 1px solid #eee; vertical-align: top; }
+    .aceite .label { color: #555; width: 120px; }
+    .aceite .assinatura { margin-top: 32px; }
+    .aceite .assinatura .linha { border-bottom: 1px solid #222; width: 260px; height: 24px; margin-top: 4px; }
+    .aceite .assinatura .nome { font-size: 0.85rem; color: #555; margin-top: 4px; }
+    .page-break { page-break-before: always; }
+    @media print {
+      body { padding: 24px 20px; }
+      .page-break { page-break-before: always; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Sistema de Rastreamento e Gestão de Motos</h1>
+    <p class="sub">Moto Agora — Proposta para aceite do cliente</p>
+    <p class="sub" style="margin-top: 8px;">Documento gerado em 06/03/2026 — 14:19h</p>
+  </div>
+
+  <h2>Objetivo do projeto</h2>
+  <p>Sistema para gestão de motos, clientes, manutenção (controle por KM) e cobranças, com alertas automáticos via WhatsApp e integração financeira (SGLock). A solução respeita a identidade da marca Moto Agora (dinamismo, rapidez e confiança).</p>
+
+  <div class="responsavel">
+    <strong>Responsáveis:</strong><br>
+    Henrique Sanches — Desenvolvedor Fullstack Sênior - (11) 93002-2870<br>
+    Mariana Pivoto — Comercial e Financeiro Sênior - (35) 9995-8808
+  </div>
+
+  <h2>Escopo do que será entregue</h2>
+  <ul>
+    <li><strong>Cadastro:</strong> clientes e motos (placa, modelo, odômetro, KM para troca de óleo, endereço de pernoite).</li>
+    <li><strong>Controle de KM:</strong> atualização de odômetro e registro de endereço de pernoite.</li>
+    <li><strong>Manutenção:</strong> registro de manutenções (tipo, descrição, custo, KM). Alertas automáticos quando o KM atingir o valor programado para troca de óleo, com envio de aviso via WhatsApp.</li>
+    <li><strong>Financeiro:</strong> cobranças (valor, vencimento, status: Pendente / Pago / Atrasado). Lembretes por WhatsApp (ex.: vencimento próximo). Integração com SGLock conforme documentação disponível.</li>
+    <li><strong>Dashboard:</strong> visão geral com total de motos, manutenções pendentes, cobranças atrasadas e informações de pernoite.</li>
+    <li><strong>Infraestrutura:</strong> ambiente com PostgreSQL, Redis e Docker para execução do sistema.</li>
+  </ul>
+
+  <h2>Tecnologias utilizadas</h2>
+  <p><strong>Frontend:</strong> React, TypeScript, Vite, Axios, React Query.</p>
+  <p><strong>Backend:</strong> Python, FastAPI, SQLAlchemy, Alembic, Pydantic.</p>
+  <p><strong>Infraestrutura:</strong> PostgreSQL, Redis, Docker.</p>
+  <p><strong>Integrações:</strong> API WhatsApp, SGLock (financeiro).</p>
+
+  <div class="page-break"></div>
+
+  <h2>Fluxos principais</h2>
+  <p><strong>Cadastro:</strong> Cliente → Moto → Endereço pernoite → Controle de KM.</p>
+  <p><strong>Manutenção:</strong> KM alcançado → alerta automático → registro da manutenção.</p>
+  <p><strong>Financeiro:</strong> cobrança criada → lembrete (ex.: vence amanhã) → envio via WhatsApp.</p>
+
+  <h2>Prazo de entrega</h2>
+  <div class="prazo-box">
+    <p class="destaque">6 (seis) semanas úteis — prazo para entrega 100% concluída</p>
+    <p class="detalhe">
+      Esse é o prazo em que nos comprometemos a entregar o sistema totalmente finalizado: funcionalidades implementadas, ajustes finais e tudo redondinho para uso. O desenvolvimento será em tempo parcial (segunda a quinta-feira, 10h às 18h, 1h de almoço — 7h/dia, 28h/semana), com margem para dependências de acesso às APIs (WhatsApp e SGLock) e para refinamentos.
+    </p>
+    <p class="detalhe">
+      Como o desenvolvimento ficará dedicado exclusivamente a este projeto, pode haver entrega antes das 6 semanas; preferimos, porém, não prometer datas que eventualmente não possamos cumprir, e garantir que até o prazo informado o cliente receba tudo pronto e validado. Caso seja necessário, há possibilidade de alinhamento sobre o prazo.
+    </p>
+  </div>
+
+  <h2>Investimento</h2>
+  <ul>
+    <li><strong>R$ 800,00</strong> — Para iniciarmos o desenvolvimento e o projeto (PIX, Crédito ou Débito).</li>
+    <li><strong>R$ 250,00</strong> — Manutenção mensal (Crédito ou PIX mensal).</li>
+  </ul>
+
+  <h2>Aceite do cliente</h2>
+  <p>Ao aprovar esta proposta pelo WhatsApp (ou por outro meio), o cliente concorda com o escopo, tecnologias, prazo e valores descritos acima.</p>
+
+  <div class="aceite">
+    <table>
+      <tr>
+        <td class="label">Cliente / Empresa:</td>
+        <td>Moto Agora</td>
+      </tr>
+      <tr>
+        <td class="label">Data do documento:</td>
+        <td>06/03/2026 — 14:19h</td>
+      </tr>
+    </table>
+    <p style="margin-top: 28px; font-size: 0.9rem; color: #666;">
+      Desenvolvimento: <strong>Henrique Sanches</strong> — Desenvolvedor Fullstack Sênior
+    </p>
+  </div>
+
+</body>
+</html>
