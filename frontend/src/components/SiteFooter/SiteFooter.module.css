@@ -1,0 +1,49 @@
+.footer {
+  padding: 44px 0;
+  background: #0c1640;
+  color: rgba(255, 255, 255, 0.88);
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.container {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  display: grid;
+  gap: 14px;
+}
+
+.brandName {
+  display: block;
+  font-weight: 950;
+  font-size: 1.1rem;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.brandSub {
+  display: block;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.links {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.link {
+  color: rgba(255, 255, 255, 0.86);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.link:hover {
+  color: #ffc400;
+}
+
+.copy {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.66);
+  font-size: 0.92rem;
+}
+

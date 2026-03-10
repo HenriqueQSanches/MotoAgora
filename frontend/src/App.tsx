@@ -1,9 +1,7 @@
+import { HomePage } from './pages/HomePage/HomePage'
+
 function App() {
-  return (
-    <div>
-      <h1>MotoAgora</h1>
-    </div>
-  )
+  return <HomePage />
 }
 
 export default App
