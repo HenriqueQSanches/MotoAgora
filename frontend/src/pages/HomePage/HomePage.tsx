@@ -61,7 +61,9 @@ export function HomePage() {
         <section id="como-funciona" className={styles.section}>
           <div className={styles.container}>
             <header className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Como funciona</h2>
+              <h2 className={styles.sectionTitle}>
+                Como <span className={styles.sectionTitleHighlight}>Funciona</span>
+              </h2>
               <p className={styles.sectionSubtitle}>
                 Um fluxo curto e transparente, do cadastro à moto com você.
               </p>
@@ -69,29 +71,24 @@ export function HomePage() {
 
             <div className={styles.steps}>
               <article className={styles.stepCard}>
-                <h3 className={styles.stepTitle}>1. Cadastro</h3>
+                <h3 className={styles.stepTitle}>Escolha o plano</h3>
                 <p className={styles.stepText}>
-                  Informe seus dados e escolha o plano que faz sentido para o
-                  seu momento.
+                  Selecione o plano que melhor se adapta ao seu perfil e
+                  necessidade.
                 </p>
               </article>
               <article className={styles.stepCard}>
-                <h3 className={styles.stepTitle}>2. Análise</h3>
+                <h3 className={styles.stepTitle}>Cadastre-se online</h3>
                 <p className={styles.stepText}>
-                  Validamos informações e retornamos com a aprovação e próximos
-                  passos.
+                  Preencha seus dados de forma rápida e segura pelo site. Nossa
+                  equipe entra em contato só para confirmar os detalhes.
                 </p>
               </article>
               <article className={styles.stepCard}>
-                <h3 className={styles.stepTitle}>3. Assinatura</h3>
+                <h3 className={styles.stepTitle}>Retire sua moto</h3>
                 <p className={styles.stepText}>
-                  Contrato digital, sem burocracia. Tudo na palma da mão.
-                </p>
-              </article>
-              <article className={styles.stepCard}>
-                <h3 className={styles.stepTitle}>4. Retirada</h3>
-                <p className={styles.stepText}>
-                  Agende e retire sua moto. Pronto: agora é só rodar.
+                  Agendamos a sua visita e cuidamos de cada detalhe para você
+                  sair pilotando com tranquilidade.
                 </p>
               </article>
             </div>
@@ -101,51 +98,89 @@ export function HomePage() {
         <section id="planos" className={styles.sectionAlt}>
           <div className={styles.container}>
             <header className={styles.sectionHeader}>
-              <h2 className={styles.sectionTitle}>Planos</h2>
+              <h2 className={styles.sectionTitle}>
+                Nossos <span className={styles.sectionTitleHighlight}>Planos</span>
+              </h2>
               <p className={styles.sectionSubtitle}>
-                Valores e detalhes finais serão conectados ao backend. Por ora,
-                deixamos o layout pronto para receber os dados.
+                Escolha o plano ideal para realizar seu sonho.
               </p>
             </header>
 
             <div className={styles.pricingGrid}>
               <article className={styles.priceCard}>
-                <h3 className={styles.priceTitle}>Essencial</h3>
-                <p className={styles.priceValue}>R$ —</p>
+                <div className={styles.priceImageWrapper}>
+                  <img
+                    className={styles.priceImage}
+                    src="/assets/plans/plan-conect-2025.jpg"
+                    alt="Moto do plano Conect 2025"
+                  />
+                </div>
+                <h3 className={styles.priceTitle}>Plano Conect 2025</h3>
+                <p className={styles.priceSubtitle}>Modelo Factor</p>
+                <p className={styles.priceValue}>R$399</p>
+                <p className={styles.priceMeta}>/semana</p>
+                <p className={styles.priceDeposit}>Caução de R$899</p>
                 <ul className={styles.priceList}>
-                  <li>Plano de entrada</li>
-                  <li>Manutenção inclusa</li>
-                  <li>Suporte via WhatsApp</li>
+                  <li>APP de Rastreo</li>
+                  <li>Guincho 24h</li>
+                  <li>Reposição de peças por desgaste</li>
+                  <li>Sem limite de quilometragem</li>
+                  <li>A moto será sua no final do contrato</li>
                 </ul>
                 <a className={styles.ctaPrimary} href="#cadastro">
-                  Quero esse
+                  Quero Minha Moto Agora!
                 </a>
               </article>
 
               <article className={styles.priceCardFeatured}>
                 <p className={styles.priceTag}>Mais escolhido</p>
-                <h3 className={styles.priceTitle}>Pro</h3>
-                <p className={styles.priceValue}>R$ —</p>
+                <div className={styles.priceImageWrapper}>
+                  <img
+                    className={styles.priceImage}
+                    src="/assets/plans/plan-conect-2026.jpg"
+                    alt="Moto do plano Conect 2026"
+                  />
+                </div>
+                <h3 className={styles.priceTitle}>Plano Conect 2026</h3>
+                <p className={styles.priceHighlight}>
+                  FAN 2026 OU FACTOR DX (ZERO KM)
+                </p>
+                <p className={styles.priceValue}>R$435</p>
+                <p className={styles.priceMeta}>/semana</p>
+                <p className={styles.priceDeposit}>
+                  Caução de R$999 — Parcelado em 12x no cartão
+                </p>
                 <ul className={styles.priceList}>
-                  <li>Melhor custo-benefício</li>
-                  <li>Manutenção e revisões</li>
-                  <li>Prioridade no atendimento</li>
+                  <li>APP de Rastreo</li>
+                  <li>Guincho 24h</li>
+                  <li>Reposição de peças por desgaste</li>
+                  <li>Sem limite de quilometragem</li>
+                  <li>A moto será sua no final do contrato</li>
                 </ul>
                 <a className={styles.ctaPrimary} href="#cadastro">
-                  Alugar agora
+                  Quero Minha Moto Agora!
                 </a>
               </article>
 
               <article className={styles.priceCard}>
-                <h3 className={styles.priceTitle}>Flex</h3>
-                <p className={styles.priceValue}>R$ —</p>
+                <div className={styles.priceImageWrapper}>
+                  <img
+                    className={styles.priceImage}
+                    src="/assets/plans/plan-flex.jpg"
+                    alt="Moto do plano Flex"
+                  />
+                </div>
+                <h3 className={styles.priceTitle}>Plano Flex</h3>
+                <p className={styles.priceValue}>R$279</p>
+                <p className={styles.priceMeta}>/semana</p>
+                <p className={styles.priceDeposit}>Caução de R$599</p>
                 <ul className={styles.priceList}>
-                  <li>Flexibilidade total</li>
-                  <li>Troca facilitada</li>
-                  <li>Ideal para alta demanda</li>
+                  <li>Guincho 24h</li>
+                  <li>Reposição de peças por desgaste</li>
+                  <li>Sem limite de quilometragem</li>
                 </ul>
                 <a className={styles.ctaPrimary} href="#cadastro">
-                  Quero esse
+                  Quero Minha Moto Agora!
                 </a>
               </article>
             </div>
