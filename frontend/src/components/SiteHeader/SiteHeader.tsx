@@ -8,7 +8,7 @@ const nav = [
   { label: 'Cadastro', href: '#cadastro' },
   { label: 'FAQ', href: '#faq' },
   { label: 'Contato', href: '#contato' },
-  { label: 'Portal do Cliente', href: '#portal' },
+  { label: 'Portal do Cliente', href: '/dashboard' },
 ]
 
 export function SiteHeader() {
