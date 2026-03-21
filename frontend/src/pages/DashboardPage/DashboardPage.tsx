@@ -1,158 +1,75 @@
-import { useMemo, useState } from 'react'
+import { useEffect } from 'react'
 import styles from './DashboardPage.module.css'
-import {
-  loginRastro,
-  searchVehicles,
-  updateVehicle,
-  type RastroVehicle,
-} from '../../services/rastrosystemApi'
-
-type Bike = {
-  id: string
-  veiculoId: number
-  modelo: string
-  placa: string
-  status: 'Disponivel' | 'Alugada' | 'Manutencao'
-  hodometro: number
-  ultimaAtualizacao: string
-}
-
-function mapVehicleToBike(vehicle: RastroVehicle): Bike {
-  const statusRaw = String(vehicle.status ?? '').toLowerCase()
-  const status: Bike['status'] =
-    statusRaw === 'true' || statusRaw === '1'
-      ? 'Alugada'
-      : statusRaw === 'manutencao' || statusRaw === 'maintenance'
-        ? 'Manutencao'
-        : 'Disponivel'
-
-  const model = vehicle.name || vehicle.modelo || 'Modelo nao informado'
-  const placa = vehicle.placa || '-'
-  const veiculoId = Number(vehicle.veiculo_id ?? vehicle.id ?? 0)
-  const fallbackId = vehicle.unique_id || `${model}-${placa}`
-  const kmValue = Number(vehicle.km_total ?? 0)
-
-  return {
-    id: `MTA-${veiculoId || fallbackId}`,
-    veiculoId,
-    modelo: model,
-    placa,
-    status,
-    hodometro: Number.isFinite(kmValue) ? kmValue : 0,
-    ultimaAtualizacao: vehicle.time || new Date().toLocaleString('pt-BR'),
-  }
-}
+import { useDashboardData } from '../../hooks/useDashboardData'
 
 export function DashboardPage() {
-  const [bikes, setBikes] = useState<Bike[]>([])
-  const [selectedId, setSelectedId] = useState<string>('')
-  const [newOdometer, setNewOdometer] = useState<string>('')
-  const [feedback, setFeedback] = useState<string>('')
-  const [loading, setLoading] = useState<boolean>(false)
+  const {
+    selectedId,
+    setSelectedId,
+    view,
+    setView,
+    newOdometer,
+    setNewOdometer,
+    feedback,
+    searchTerm,
+    setSearchTerm,
+    currentPage,
+    totalPages,
+    paginatedBikes,
+    odometerHistory,
+    loading,
+    login,
+    setLogin,
+    senha,
+    setSenha,
+    isAuthenticated,
+    selectedBike,
+    filteredBikes,
+    metrics,
+    handleLogin,
+    handleLoadVehicles,
+    handleLoadMockVehicles,
+    handleUpdateOdometer,
+    handleGoToPreviousPage,
+    handleGoToNextPage,
+    handleClearSession,
+    clearFeedback,
+  } = useDashboardData()
 
-  const [login, setLogin] = useState<string>('')
-  const [senha, setSenha] = useState<string>('')
-  const [token, setToken] = useState<string>(
-    () => localStorage.getItem('rastrosystem_token') ?? '',
-  )
+  const isErrorFeedback = feedback.toLowerCase().includes('erro') || feedback.toLowerCase().includes('falha')
 
-  const isAuthenticated = token.trim().length > 0
-
-  const selectedBike = useMemo(
-    () => bikes.find((bike) => bike.id === selectedId),
-    [bikes, selectedId],
-  )
-
-  const metrics = useMemo(() => {
-    const total = bikes.length
-    const alugadas = bikes.filter((bike) => bike.status === 'Alugada').length
-    const disponiveis = bikes.filter((bike) => bike.status === 'Disponivel').length
-    const manutencao = bikes.filter((bike) => bike.status === 'Manutencao').length
-
-    return { total, alugadas, disponiveis, manutencao }
-  }, [bikes])
-
-  async function handleLogin() {
-    setFeedback('')
-    setLoading(true)
-    try {
-      const response = await loginRastro({ login, senha, app: 9 })
-      if (!response.token) {
-        throw new Error('Token nao retornado pela API.')
-      }
-      localStorage.setItem('rastrosystem_token', response.token)
-      setToken(response.token)
-      setFeedback('Login realizado com sucesso.')
-    } catch (error) {
-      setFeedback(error instanceof Error ? error.message : 'Falha no login.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function handleLoadVehicles() {
-    if (!isAuthenticated) return
-    setLoading(true)
-    setFeedback('')
-    try {
-      const vehicles = await searchVehicles(token, { tag_search: '' })
-      const mapped = vehicles.map(mapVehicleToBike)
-      setBikes(mapped)
-      if (mapped[0]) setSelectedId(mapped[0].id)
-      setFeedback(`${mapped.length} veiculos carregados.`)
-    } catch (error) {
-      setFeedback(error instanceof Error ? error.message : 'Erro ao buscar veiculos.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function handleUpdateOdometer() {
-    if (!selectedBike) return
-
-    const value = Number(newOdometer)
-    if (!Number.isFinite(value) || value <= selectedBike.hodometro) {
-      setFeedback('Novo hodometro precisa ser maior que o atual.')
-      return
-    }
-
-    if (!isAuthenticated) {
-      setFeedback('Faca login antes de atualizar o hodometro.')
-      return
-    }
-
-    setLoading(true)
-    setFeedback('')
-    try {
-      await updateVehicle(token, selectedBike.veiculoId, { km_total: value })
-      setBikes((prev) =>
-        prev.map((bike) =>
-          bike.id === selectedBike.id
-            ? {
-                ...bike,
-                hodometro: value,
-                ultimaAtualizacao: new Date().toLocaleString('pt-BR'),
-              }
-            : bike,
-        ),
-      )
-      setNewOdometer('')
-      setFeedback(`Hodometro da moto ${selectedBike.id} atualizado com sucesso.`)
-    } catch (error) {
-      setFeedback(error instanceof Error ? error.message : 'Erro ao atualizar hodometro.')
-    } finally {
-      setLoading(false)
-    }
-  }
+  useEffect(() => {
+    if (!feedback) return
+    const timer = window.setTimeout(() => clearFeedback(), 3500)
+    return () => window.clearTimeout(timer)
+  }, [feedback, clearFeedback])
 
   return (
     <div className={styles.page}>
       <aside className={styles.sidebar}>
         <h1 className={styles.brand}>MotoAgora</h1>
         <nav className={styles.nav}>
-          <a className={styles.navItemActive} href="/dashboard">
-            Dashboard
-          </a>
+          <button
+            className={view === 'resumo' ? styles.navItemActive : styles.navItem}
+            type="button"
+            onClick={() => setView('resumo')}
+          >
+            Resumo
+          </button>
+          <button
+            className={view === 'motos' ? styles.navItemActive : styles.navItem}
+            type="button"
+            onClick={() => setView('motos')}
+          >
+            Motos
+          </button>
+          <button
+            className={view === 'detalhe' ? styles.navItemActive : styles.navItem}
+            type="button"
+            onClick={() => setView('detalhe')}
+          >
+            Detalhe da moto
+          </button>
           <a className={styles.navItem} href="/">
             Landing
           </a>
@@ -194,103 +111,222 @@ export function DashboardPage() {
             >
               Buscar veiculos
             </button>
+            <button className={styles.buttonSecondary} type="button" onClick={handleLoadMockVehicles}>
+              Usar modo demo
+            </button>
+            <button
+              className={styles.buttonDanger}
+              type="button"
+              onClick={handleClearSession}
+              disabled={loading && !isAuthenticated}
+            >
+              Limpar sessao
+            </button>
           </div>
           <p className={styles.tokenInfo}>
             {isAuthenticated ? 'Token salvo e pronto para uso.' : 'Sem token autenticado.'}
           </p>
         </section>
 
-        <section className={styles.metrics}>
-          <article className={styles.metricCard}>
-            <span className={styles.metricLabel}>Total de motos</span>
-            <strong className={styles.metricValue}>{metrics.total}</strong>
-          </article>
-          <article className={styles.metricCard}>
-            <span className={styles.metricLabel}>Alugadas</span>
-            <strong className={styles.metricValue}>{metrics.alugadas}</strong>
-          </article>
-          <article className={styles.metricCard}>
-            <span className={styles.metricLabel}>Disponiveis</span>
-            <strong className={styles.metricValue}>{metrics.disponiveis}</strong>
-          </article>
-          <article className={styles.metricCard}>
-            <span className={styles.metricLabel}>Manutencao</span>
-            <strong className={styles.metricValue}>{metrics.manutencao}</strong>
-          </article>
-        </section>
+        {view === 'resumo' ? (
+          <section>
+            {metrics.total === 0 && !loading ? (
+              <article className={styles.emptyGuide}>
+                <h3 className={styles.panelTitle}>Comece pelo modo demo</h3>
+                <p className={styles.emptyState}>
+                  Voce ainda nao tem motos carregadas no painel. Use o modo demo
+                  para validar o fluxo enquanto as credenciais da API nao chegam.
+                </p>
+                <button className={styles.button} type="button" onClick={handleLoadMockVehicles}>
+                  Carregar dados demo
+                </button>
+              </article>
+            ) : null}
 
-        <section className={styles.grid}>
-          <article className={styles.panel}>
-            <h3 className={styles.panelTitle}>Motos</h3>
+            <section className={styles.metrics}>
+              <article className={styles.metricCard}>
+                <span className={styles.metricLabel}>Total de motos</span>
+                {loading ? <span className={styles.skeletonValue} /> : <strong className={styles.metricValue}>{metrics.total}</strong>}
+              </article>
+              <article className={styles.metricCard}>
+                <span className={styles.metricLabel}>Alugadas</span>
+                {loading ? <span className={styles.skeletonValue} /> : <strong className={styles.metricValue}>{metrics.alugadas}</strong>}
+              </article>
+              <article className={styles.metricCard}>
+                <span className={styles.metricLabel}>Disponiveis</span>
+                {loading ? <span className={styles.skeletonValue} /> : <strong className={styles.metricValue}>{metrics.disponiveis}</strong>}
+              </article>
+              <article className={styles.metricCard}>
+                <span className={styles.metricLabel}>Manutencao</span>
+                {loading ? <span className={styles.skeletonValue} /> : <strong className={styles.metricValue}>{metrics.manutencao}</strong>}
+              </article>
+            </section>
+            <article className={styles.panel}>
+              <h3 className={styles.panelTitle}>Ultimas atualizacoes de hodometro</h3>
+              {odometerHistory.length === 0 ? (
+                <p className={styles.emptyState}>Nenhuma atualizacao registrada ate agora.</p>
+              ) : (
+                <ul className={styles.historyList}>
+                  {odometerHistory.slice(0, 8).map((item) => (
+                    <li key={`${item.bikeId}-${item.at}`} className={styles.historyItem}>
+                      <strong>{item.bikeId}</strong> de {item.previousKm.toLocaleString('pt-BR')} km para{' '}
+                      {item.newKm.toLocaleString('pt-BR')} km ({item.at})
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </article>
+          </section>
+        ) : null}
+
+        {view === 'motos' ? (
+          <section className={styles.panel}>
+            <div className={styles.tableHeader}>
+              <h3 className={styles.panelTitle}>Motos</h3>
+              <input
+                className={styles.input}
+                value={searchTerm}
+                onChange={(event) => setSearchTerm(event.target.value)}
+                placeholder="Buscar por modelo, placa ou ID"
+              />
+            </div>
             <table className={styles.table}>
               <thead>
                 <tr>
                   <th>ID</th>
                   <th>Modelo</th>
+                  <th>Placa</th>
                   <th>Status</th>
                   <th>Hodometro</th>
                 </tr>
               </thead>
               <tbody>
-                {bikes.map((bike) => (
+                {loading ? (
+                  <tr>
+                    <td colSpan={5} className={styles.loadingCell}>
+                      Carregando dados...
+                    </td>
+                  </tr>
+                ) : null}
+                {!loading &&
+                  paginatedBikes.map((bike) => (
                   <tr
                     key={bike.id}
-                    onClick={() => setSelectedId(bike.id)}
+                    onClick={() => {
+                      setSelectedId(bike.id)
+                      setView('detalhe')
+                    }}
                     className={bike.id === selectedId ? styles.rowActive : ''}
                   >
                     <td>{bike.id}</td>
                     <td>{bike.modelo}</td>
-                    <td>{bike.status}</td>
+                    <td>{bike.placa}</td>
+                    <td>
+                      <span
+                        className={
+                          bike.status === 'Alugada'
+                            ? styles.statusAlugada
+                            : bike.status === 'Manutencao'
+                              ? styles.statusManutencao
+                              : styles.statusDisponivel
+                        }
+                      >
+                        {bike.status}
+                      </span>
+                    </td>
                     <td>{bike.hodometro.toLocaleString('pt-BR')} km</td>
                   </tr>
-                ))}
+                  ))}
               </tbody>
             </table>
-          </article>
-
-          <article className={styles.panel}>
-            <h3 className={styles.panelTitle}>Atualizar hodometro</h3>
-
-            {selectedBike ? (
-              <div className={styles.form}>
-                <p className={styles.bikeInfo}>
-                  <strong>{selectedBike.id}</strong> - {selectedBike.modelo}
-                </p>
-                <p className={styles.bikeInfo}>Placa: {selectedBike.placa}</p>
-                <p className={styles.bikeInfo}>
-                  Atual: {selectedBike.hodometro.toLocaleString('pt-BR')} km
-                </p>
-                <p className={styles.bikeInfo}>
-                  Ultima atualizacao: {selectedBike.ultimaAtualizacao}
-                </p>
-
-                <label className={styles.label} htmlFor="hodometro">
-                  Novo hodometro
-                </label>
-                <input
-                  id="hodometro"
-                  className={styles.input}
-                  type="number"
-                  value={newOdometer}
-                  onChange={(event) => setNewOdometer(event.target.value)}
-                  placeholder="Ex: 14000"
-                />
-
+            {filteredBikes.length === 0 ? (
+              <p className={styles.emptyState}>Nenhuma moto encontrada com esse filtro.</p>
+            ) : null}
+            {filteredBikes.length > 0 ? (
+              <div className={styles.pagination}>
                 <button
-                  className={styles.button}
                   type="button"
-                  onClick={handleUpdateOdometer}
-                  disabled={loading}
+                  className={styles.buttonSecondary}
+                  onClick={handleGoToPreviousPage}
+                  disabled={currentPage <= 1}
                 >
-                  Atualizar
+                  Anterior
                 </button>
-
-                {feedback ? <p className={styles.feedback}>{feedback}</p> : null}
+                <span className={styles.pageInfo}>
+                  Pagina {currentPage} de {totalPages}
+                </span>
+                <button
+                  type="button"
+                  className={styles.buttonSecondary}
+                  onClick={handleGoToNextPage}
+                  disabled={currentPage >= totalPages}
+                >
+                  Proxima
+                </button>
               </div>
             ) : null}
-          </article>
-        </section>
+          </section>
+        ) : null}
+
+        {view === 'detalhe' ? (
+          <section className={styles.grid}>
+            <article className={styles.panel}>
+              <h3 className={styles.panelTitle}>Detalhe da moto</h3>
+              {selectedBike ? (
+                <div className={styles.form}>
+                  <p className={styles.bikeInfo}>
+                    <strong>{selectedBike.id}</strong> - {selectedBike.modelo}
+                  </p>
+                  <p className={styles.bikeInfo}>Placa: {selectedBike.placa}</p>
+                  <p className={styles.bikeInfo}>Status: {selectedBike.status}</p>
+                  <p className={styles.bikeInfo}>
+                    Hodometro atual: {selectedBike.hodometro.toLocaleString('pt-BR')} km
+                  </p>
+                  <p className={styles.bikeInfo}>
+                    Ultima atualizacao: {selectedBike.ultimaAtualizacao}
+                  </p>
+                </div>
+              ) : (
+                <p className={styles.emptyState}>Selecione uma moto na tela de Motos.</p>
+              )}
+            </article>
+
+            <article className={styles.panel}>
+              <h3 className={styles.panelTitle}>Atualizar hodometro</h3>
+              {selectedBike ? (
+                <div className={styles.form}>
+                  <label className={styles.label} htmlFor="hodometro">
+                    Novo hodometro
+                  </label>
+                  <input
+                    id="hodometro"
+                    className={styles.input}
+                    type="number"
+                    value={newOdometer}
+                    onChange={(event) => setNewOdometer(event.target.value)}
+                    placeholder="Ex: 14000"
+                  />
+
+                  <button
+                    className={styles.button}
+                    type="button"
+                    onClick={handleUpdateOdometer}
+                    disabled={loading}
+                  >
+                    Atualizar
+                  </button>
+                </div>
+              ) : null}
+              {feedback ? <p className={styles.feedback}>{feedback}</p> : null}
+            </article>
+          </section>
+        ) : null}
       </main>
+      {feedback ? (
+        <div className={isErrorFeedback ? styles.toastError : styles.toastSuccess} role="status">
+          {feedback}
+        </div>
+      ) : null}
     </div>
   )
 }
