@@ -2,6 +2,8 @@ export type BikeStatus = 'Disponivel' | 'Alugada' | 'Manutencao'
 
 export type Bike = {
   id: string
+  /** ID da moto no PostgreSQL (API MotoAgora). Ausente no modo demo local. */
+  dbId?: number
   veiculoId: number
   modelo: string
   placa: string
@@ -17,4 +19,4 @@ export type OdometerHistoryItem = {
   at: string
 }
 
-export type DashboardView = 'resumo' | 'motos' | 'detalhe'
+export type DashboardView = 'resumo' | 'motos' | 'detalhe' | 'gestao'

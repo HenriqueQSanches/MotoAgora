@@ -1,32 +1,13 @@
-const BASE_URL =
-  import.meta.env.VITE_RASTRO_API_BASE ?? 'https://teste.rastrosystem.com.br'
+import { buildRastroUrl, isRastroMockMode } from '../config/rastroConfig'
+import type { ApiObject, LoginPayload, RastroVehicle, SearchVehiclePayload } from './rastroTypes'
+import { getMockRastroVehicles, MOCK_RASTRO_TOKEN } from './rastrosystemApiMock'
 
-type LoginPayload = {
-  login: string
-  senha: string
-  app: number
-}
+export type { LoginPayload, RastroVehicle, SearchVehiclePayload } from './rastroTypes'
 
-type SearchVehiclePayload = {
-  tag_search?: string
-  pessoa_id?: string
-}
+const mockDelay = () => new Promise((r) => window.setTimeout(r, 120))
 
-export type RastroVehicle = {
-  id?: number
-  veiculo_id?: number
-  name?: string
-  modelo?: string
-  placa?: string
-  unique_id?: string
-  status?: string | boolean | number
-  km_total?: number | string
-  time?: string
-}
-
-type ApiObject = Record<string, unknown>
-
-function resolveDataArray(value: unknown): ApiObject[] {
+/** Exported for tests — normalizes various API list shapes. */
+export function resolveDataArray(value: unknown): ApiObject[] {
   if (Array.isArray(value)) return value as ApiObject[]
   if (typeof value === 'string') {
     try {
@@ -44,7 +25,7 @@ function resolveDataArray(value: unknown): ApiObject[] {
 }
 
 async function request<T>(path: string, init: RequestInit): Promise<T> {
-  const response = await fetch(`${BASE_URL}${path}`, init)
+  const response = await fetch(buildRastroUrl(path), init)
   const contentType = response.headers.get('content-type') ?? ''
   const body = contentType.includes('application/json')
     ? await response.json()
@@ -62,6 +43,11 @@ async function request<T>(path: string, init: RequestInit): Promise<T> {
 }
 
 export async function loginRastro(payload: LoginPayload): Promise<{ token: string }> {
+  if (isRastroMockMode()) {
+    await mockDelay()
+    return { token: MOCK_RASTRO_TOKEN }
+  }
+
   return request<{ token: string }>('/api_v2/login/', {
     method: 'POST',
     headers: {
@@ -76,6 +62,13 @@ export async function searchVehicles(
   token: string,
   payload: SearchVehiclePayload,
 ): Promise<RastroVehicle[]> {
+  if (isRastroMockMode()) {
+    await mockDelay()
+    void token
+    void payload
+    return getMockRastroVehicles()
+  }
+
   const response = await request<ApiObject>('/api_v2/veiculos/buscar/', {
     method: 'POST',
     headers: {
@@ -95,6 +88,14 @@ export async function updateVehicle(
   vehicleId: number,
   payload: { km_total: number },
 ): Promise<ApiObject> {
+  if (isRastroMockMode()) {
+    await mockDelay()
+    void token
+    void vehicleId
+    void payload
+    return { ok: true }
+  }
+
   return request<ApiObject>(`/api_v2/veiculo-update/${vehicleId}`, {
     method: 'POST',
     headers: {
@@ -105,4 +106,3 @@ export async function updateVehicle(
     body: JSON.stringify(payload),
   })
 }
-

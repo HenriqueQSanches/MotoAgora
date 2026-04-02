@@ -1,0 +1,37 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: motoagora-postgres
+    environment:
+      POSTGRES_USER: moto
+      POSTGRES_PASSWORD: moto
+      POSTGRES_DB: motoagora
+    ports:
+      - "5432:5432"
+    volumes:
+      - motoagora_pg:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: motoagora-redis
+    ports:
+      - "6379:6379"
+
+  api:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: motoagora-api
+    environment:
+      DATABASE_URL: postgresql://moto:moto@postgres:5432/motoagora
+      REDIS_URL: redis://redis:6379/0
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      RASTRO_API_BASE: ${RASTRO_API_BASE:-https://teste.rastrosystem.com.br}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  motoagora_pg:

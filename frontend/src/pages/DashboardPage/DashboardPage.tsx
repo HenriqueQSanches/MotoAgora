@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
-import styles from './DashboardPage.module.css'
+import { GestaoPanel } from '../../components/GestaoPanel/GestaoPanel'
 import { useDashboardData } from '../../hooks/useDashboardData'
+import styles from './DashboardPage.module.css'
 
 export function DashboardPage() {
   const {
@@ -22,18 +23,23 @@ export function DashboardPage() {
     setLogin,
     senha,
     setSenha,
-    isAuthenticated,
+    rastroVeiculoTag,
+    setRastroVeiculoTag,
+    isRastroAuthenticated,
     selectedBike,
     filteredBikes,
-    metrics,
+    contractMetrics,
+    dataMode,
     handleLogin,
     handleLoadVehicles,
     handleLoadMockVehicles,
+    handleUseApiData,
     handleUpdateOdometer,
     handleGoToPreviousPage,
     handleGoToNextPage,
     handleClearSession,
     clearFeedback,
+    apiError,
   } = useDashboardData()
 
   const isErrorFeedback = feedback.toLowerCase().includes('erro') || feedback.toLowerCase().includes('falha')
@@ -70,6 +76,13 @@ export function DashboardPage() {
           >
             Detalhe da moto
           </button>
+          <button
+            className={view === 'gestao' ? styles.navItemActive : styles.navItem}
+            type="button"
+            onClick={() => setView('gestao')}
+          >
+            Gestao (cadastro)
+          </button>
           <a className={styles.navItem} href="/">
             Landing
           </a>
@@ -78,14 +91,17 @@ export function DashboardPage() {
 
       <main className={styles.main}>
         <header className={styles.header}>
-          <h2 className={styles.title}>Dashboard de Frota (MVP)</h2>
+          <h2 className={styles.title}>Dashboard MotoAgora</h2>
           <p className={styles.subtitle}>
-            Integrado com a API Rastrosystem para veiculos e hodometro.
+            Dados no PostgreSQL (FastAPI). Rastrosystem passa pelo servidor — sem expor credenciais no
+            browser.
           </p>
         </header>
 
+        {apiError ? <p className={styles.envHint}>{apiError}</p> : null}
+
         <section className={styles.authPanel}>
-          <h3 className={styles.panelTitle}>Conexao com API</h3>
+          <h3 className={styles.panelTitle}>Rastrosystem (via backend)</h3>
           <div className={styles.authGrid}>
             <input
               className={styles.input}
@@ -103,39 +119,53 @@ export function DashboardPage() {
             <button className={styles.button} type="button" onClick={handleLogin} disabled={loading}>
               Entrar
             </button>
+            <input
+              className={styles.input}
+              value={rastroVeiculoTag}
+              onChange={(event) => setRastroVeiculoTag(event.target.value)}
+              placeholder="Busca Rastro: placa, modelo..."
+              title="Opcional. A API tambem recebe pessoa_id do seu login (cliente_id)."
+            />
             <button
               className={styles.buttonSecondary}
               type="button"
               onClick={handleLoadVehicles}
-              disabled={loading || !isAuthenticated}
+              disabled={loading || !isRastroAuthenticated}
             >
               Buscar veiculos
             </button>
             <button className={styles.buttonSecondary} type="button" onClick={handleLoadMockVehicles}>
-              Usar modo demo
+              Modo demo (sem API)
+            </button>
+            <button className={styles.buttonSecondary} type="button" onClick={handleUseApiData}>
+              Voltar dados do servidor
             </button>
             <button
               className={styles.buttonDanger}
               type="button"
               onClick={handleClearSession}
-              disabled={loading && !isAuthenticated}
+              disabled={loading && !isRastroAuthenticated}
             >
-              Limpar sessao
+              Limpar sessao Rastro
             </button>
           </div>
           <p className={styles.tokenInfo}>
-            {isAuthenticated ? 'Token salvo e pronto para uso.' : 'Sem token autenticado.'}
+            {dataMode === 'demo'
+              ? 'Modo demo ativo — cadastros abaixo nao aparecem ate voltar ao servidor.'
+              : isRastroAuthenticated
+                ? 'Token Rastrosystem OK (sessao local).'
+                : 'Sem token Rastrosystem.'}
           </p>
         </section>
 
         {view === 'resumo' ? (
           <section>
-            {metrics.total === 0 && !loading ? (
+            {contractMetrics.total === 0 && !loading && dataMode === 'api' ? (
               <article className={styles.emptyGuide}>
-                <h3 className={styles.panelTitle}>Comece pelo modo demo</h3>
+                <h3 className={styles.panelTitle}>Nenhuma moto cadastrada</h3>
                 <p className={styles.emptyState}>
-                  Voce ainda nao tem motos carregadas no painel. Use o modo demo
-                  para validar o fluxo enquanto as credenciais da API nao chegam.
+                  Suba o Docker (Postgres), rode migracoes e cadastre clientes/motos em Gestao. Modo
+                  demo continua disponivel para testar a interface.
                 </p>
                 <button className={styles.button} type="button" onClick={handleLoadMockVehicles}>
                   Carregar dados demo
@@ -146,19 +176,62 @@ export function DashboardPage() {
             <section className={styles.metrics}>
               <article className={styles.metricCard}>
                 <span className={styles.metricLabel}>Total de motos</span>
-                {loading ? <span className={styles.skeletonValue} /> : <strong className={styles.metricValue}>{metrics.total}</strong>}
+                {loading ? (
+                  <span className={styles.skeletonValue} />
+                ) : (
+                  <strong className={styles.metricValue}>{contractMetrics.total}</strong>
+                )}
               </article>
               <article className={styles.metricCard}>
+                <span className={styles.metricLabel}>Troca de oleo (KM)</span>
+                {loading ? (
+                  <span className={styles.skeletonValue} />
+                ) : (
+                  <strong className={styles.metricValue}>{contractMetrics.oleoPendente}</strong>
+                )}
+              </article>
+              <article className={styles.metricCard}>
+                <span className={styles.metricLabel}>Cobrancas atrasadas</span>
+                {loading ? (
+                  <span className={styles.skeletonValue} />
+                ) : (
+                  <strong className={styles.metricValue}>{contractMetrics.cobrancasAtrasadas}</strong>
+                )}
+              </article>
+              <article className={styles.metricCard}>
+                <span className={styles.metricLabel}>Com pernoite</span>
+                {loading ? (
+                  <span className={styles.skeletonValue} />
+                ) : (
+                  <strong className={styles.metricValue}>{contractMetrics.pernoite}</strong>
+                )}
+              </article>
+            </section>
+
+            <section className={styles.metrics}>
+              <article className={styles.metricCard}>
                 <span className={styles.metricLabel}>Alugadas</span>
-                {loading ? <span className={styles.skeletonValue} /> : <strong className={styles.metricValue}>{metrics.alugadas}</strong>}
+                {loading ? (
+                  <span className={styles.skeletonValue} />
+                ) : (
+                  <strong className={styles.metricValue}>{contractMetrics.alugadas}</strong>
+                )}
               </article>
               <article className={styles.metricCard}>
                 <span className={styles.metricLabel}>Disponiveis</span>
-                {loading ? <span className={styles.skeletonValue} /> : <strong className={styles.metricValue}>{metrics.disponiveis}</strong>}
+                {loading ? (
+                  <span className={styles.skeletonValue} />
+                ) : (
+                  <strong className={styles.metricValue}>{contractMetrics.disponiveis}</strong>
+                )}
               </article>
               <article className={styles.metricCard}>
-                <span className={styles.metricLabel}>Manutencao</span>
-                {loading ? <span className={styles.skeletonValue} /> : <strong className={styles.metricValue}>{metrics.manutencao}</strong>}
+                <span className={styles.metricLabel}>Em manutencao</span>
+                {loading ? (
+                  <span className={styles.skeletonValue} />
+                ) : (
+                  <strong className={styles.metricValue}>{contractMetrics.manutencao}</strong>
+                )}
               </article>
             </section>
             <article className={styles.panel}>
@@ -265,6 +338,12 @@ export function DashboardPage() {
                 </button>
               </div>
             ) : null}
+          </section>
+        ) : null}
+
+        {view === 'gestao' ? (
+          <section>
+            <GestaoPanel />
           </section>
         ) : null}
 
